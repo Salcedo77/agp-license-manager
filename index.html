@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGP License Manager · Best Trades</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #07070f;
+      --s1:       #0d0d1c;
+      --s2:       #13132a;
+      --border:   rgba(255,255,255,0.06);
+      --gold:     #c8a84b;
+      --gold-lo:  rgba(200,168,75,0.12);
+      --green:    #3ecf8e;
+      --green-lo: rgba(62,207,142,0.12);
+      --red:      #e05252;
+      --red-lo:   rgba(224,82,82,0.12);
+      --text:     #ddddf0;
+      --text-2:   #8888b0;
+      --text-3:   #44446a;
+      --mono:     'Space Mono', monospace;
+      --ui:       'Sora', sans-serif;
+      --rad:      8px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--ui);
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse 60% 60% at 50% 40%, rgba(200,168,75,0.07) 0%, transparent 70%);
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+      padding: 48px 40px;
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 0 80px rgba(200,168,75,0.05);
+      animation: fadeUp 0.4s ease;
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .logo-icon { font-size: 22px; color: var(--gold); }
+
+    .logo-text {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 32px;
+    }
+
+    /* ── FIELDS ── */
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 6px;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: var(--rad);
+      color: var(--text);
+      font-family: var(--ui);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus { border-color: rgba(200,168,75,0.5); }
+    .field input::placeholder { color: var(--text-3); }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      width: 100%;
+      padding: 11px 20px;
+      background: var(--gold);
+      border: none;
+      border-radius: var(--rad);
+      color: #07070f;
+      font-family: var(--ui);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-secondary {
+      padding: 8px 16px;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: var(--rad);
+      color: var(--text-2);
+      font-family: var(--ui);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+    .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-danger {
+      padding: 5px 12px;
+      background: transparent;
+      border: 1px solid rgba(224,82,82,0.4);
+      border-radius: 6px;
+      color: var(--red);
+      font-family: var(--ui);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-danger:hover { background: var(--red-lo); border-color: var(--red); }
+
+    .btn-activate {
+      padding: 5px 12px;
+      background: transparent;
+      border: 1px solid rgba(62,207,142,0.4);
+      border-radius: 6px;
+      color: var(--green);
+      font-family: var(--ui);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-activate:hover { background: var(--green-lo); border-color: var(--green); }
+
+    /* ── MESSAGES ── */
+    .error-msg {
+      padding: 10px 14px;
+      background: var(--red-lo);
+      border: 1px solid rgba(224,82,82,0.35);
+      border-radius: var(--rad);
+      color: var(--red);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .success-msg {
+      padding: 10px 14px;
+      background: var(--green-lo);
+      border: 1px solid rgba(62,207,142,0.35);
+      border-radius: var(--rad);
+      color: var(--green);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── DASHBOARD ── */
+    #dashboard {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 32px;
+      background: var(--s1);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-icon { font-size: 16px; color: var(--gold); }
+
+    .topbar-name {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+
+    .topbar-sep { color: var(--text-3); }
+
+    .topbar-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: var(--text-2);
+    }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      padding: 28px 32px;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ── STATS ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      padding: 20px 24px;
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: var(--rad);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    /* ── PANELS ── */
+    .panels {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: var(--rad);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+
+    .panel-body { padding: 20px; }
+
+    /* ── KEY PREVIEW ── */
+    .key-preview {
+      padding: 14px 16px;
+      background: var(--s2);
+      border: 1px solid rgba(200,168,75,0.2);
+      border-radius: var(--rad);
+      font-family: var(--mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gold);
+      text-align: center;
+      letter-spacing: 0.06em;
+      margin-bottom: 18px;
+    }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.018); }
+
+    td {
+      padding: 12px 16px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .td-key {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-3);
+      font-size: 14px;
+      padding: 2px 5px;
+      border-radius: 4px;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+    .copy-btn:hover { color: var(--gold); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .badge-valid {
+      background: var(--green-lo);
+      color: var(--green);
+      border: 1px solid rgba(62,207,142,0.2);
+    }
+
+    .badge-revoked {
+      background: var(--red-lo);
+      color: var(--red);
+      border: 1px solid rgba(224,82,82,0.2);
+    }
+
+    .td-mono {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-2);
+    }
+
+    .td-dim { color: var(--text-2); font-size: 12px; }
+    .td-muted { color: var(--text-3); font-size: 12px; }
+
+    .td-actions { display: flex; gap: 6px; }
+
+    /* ── PING ── */
+    .ping-section {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .ping-info {
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .ping-result {
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .ping-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .ping-dot.live { animation: blink 1.8s infinite; }
+
+    /* ── EMPTY ── */
+    .empty-state {
+      padding: 48px 24px !important;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 13px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      .panels { grid-template-columns: 1fr; }
+      .main { padding: 20px 16px; }
+      .topbar { padding: 14px 16px; }
+    }
+
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .stat-value { font-size: 24px; }
+      .login-box { padding: 36px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════ LOGIN ════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Best Trades</span>
+    </div>
+    <h1 class="login-title">AGP License Manager</h1>
+    <p class="login-sub">Panel de administración de licencias</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email" />
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <div id="login-error" class="error-msg hidden"></div>
+    <button class="btn-primary" id="login-btn">Ingresar</button>
+  </div>
+</div>
+
+<!-- ════════════════════════ DASHBOARD ════════════════════════ -->
+<div id="dashboard" class="hidden">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-brand">
+        <span class="topbar-icon">◈</span>
+        <span class="topbar-name">Best Trades</span>
+      </div>
+      <span class="topbar-sep">·</span>
+      <span class="topbar-title">AGP License Manager</span>
+    </div>
+    <div class="topbar-right">
+      <span class="user-email" id="user-email-display"></span>
+      <button class="btn-secondary" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Total Licencias</div>
+        <div class="stat-value" id="stat-total" style="color: var(--gold)">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Activas</div>
+        <div class="stat-value" id="stat-active" style="color: var(--green)">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Revocadas</div>
+        <div class="stat-value" id="stat-revoked" style="color: var(--red)">—</div>
+      </div>
+    </div>
+
+    <div class="panels">
+
+      <!-- ── Left column ── -->
+      <div>
+
+        <!-- New license form -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Nueva Licencia</span>
+          </div>
+          <div class="panel-body">
+            <div class="key-preview" id="key-preview">AGP-????-????</div>
+            <div class="field">
+              <label>Número de cuenta MT4 *</label>
+              <input type="number" id="input-account" placeholder="Ej: 8396952" />
+            </div>
+            <div class="field">
+              <label>Broker</label>
+              <input type="text" id="input-broker" value="Just Markets" />
+            </div>
+            <div class="field">
+              <label>Notas (opcional)</label>
+              <input type="text" id="input-notes" placeholder="Nombre del cliente, fecha de pago…" />
+            </div>
+            <div id="add-error"   class="error-msg hidden"></div>
+            <div id="add-success" class="success-msg hidden"></div>
+            <button class="btn-primary" id="add-btn">Generar y Agregar Licencia</button>
+          </div>
+        </div>
+
+        <!-- Keep-alive ping -->
+        <div class="panel" style="margin-top: 16px;">
+          <div class="panel-header">
+            <span class="panel-title">Keep-Alive</span>
+          </div>
+          <div class="panel-body">
+            <p class="ping-info">
+              Supabase pausa proyectos inactivos después de 7 días. Cada operación en la tabla
+              (agregar, revocar, actualizar) cuenta como actividad. Si no has operado en varios
+              días, haz ping manual aquí.
+            </p>
+            <button class="btn-secondary" id="ping-btn" style="width:100%">Hacer ping a Supabase</button>
+            <div id="ping-result" class="ping-result hidden">
+              <span class="ping-dot live"></span>
+              <span id="ping-time-text"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Right column: table ── -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Licencias Registradas</span>
+          <button class="btn-secondary" id="refresh-btn" style="padding: 5px 12px; font-size: 12px;">↻ Actualizar</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Clave de Licencia</th>
+                <th>Cuenta MT4</th>
+                <th>Broker</th>
+                <th>Estado</th>
+                <th>Creada</th>
+                <th>Notas</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="licenses-tbody">
+              <tr><td colspan="7" class="empty-state">Cargando licencias…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ════════════════════════════════════════
+  // CONFIG
+  // ════════════════════════════════════════
+  const SUPABASE_URL = 'https://zhjinfbqugdkzmykezed.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Pty3YZ4__Sptt2IHeTAH0A_O4yXzLOX';
+
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ════════════════════════════════════════
+  // STATE
+  // ════════════════════════════════════════
+  let licenses = [];
+  let previewKey = '';
+
+  // ════════════════════════════════════════
+  // UTILS
+  // ════════════════════════════════════════
+  function generateKey() {
+    // Excluye caracteres ambiguos: O, 0, I, 1
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const rand = (n) => Array.from({length: n}, () =>
+      chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `AGP-${rand(4)}-${rand(4)}`;
+  }
+
+  function refreshPreview() {
+    previewKey = generateKey();
+    document.getElementById('key-preview').textContent = previewKey;
+  }
+
+  function fmtDate(str) {
+    if (!str) return '—';
+    return new Date(str).toLocaleDateString('es-DO', {
+      day: '2-digit', month: 'short', year: 'numeric'
+    });
+  }
+
+  function show(id) { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id) { document.getElementById(id).classList.add('hidden'); }
+  function setText(id, t) { document.getElementById(id).textContent = t; }
+
+  // ════════════════════════════════════════
+  // RENDER TABLE
+  // ════════════════════════════════════════
+  function renderTable() {
+    const total   = licenses.length;
+    const active  = licenses.filter(l => l.status === 'VALID').length;
+    const revoked = licenses.filter(l => l.status === 'REVOKED').length;
+
+    setText('stat-total',   total);
+    setText('stat-active',  active);
+    setText('stat-revoked', revoked);
+
+    const tbody = document.getElementById('licenses-tbody');
+
+    if (total === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No hay licencias registradas aún.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = licenses.map(l => {
+      const isValid = l.status === 'VALID';
+      const key = l.license_key || '';
+      const safeKey = key.replace(/'/g, "\\'");
+      return `
+        <tr>
+          <td>
+            <div class="td-key">
+              ${key}
+              <button class="copy-btn" data-key="${safeKey}" title="Copiar clave">⧉</button>
+            </div>
+          </td>
+          <td class="td-mono">${l.account_login || '—'}</td>
+          <td class="td-dim">${l.broker_name || '—'}</td>
+          <td>
+            <span class="badge badge-${isValid ? 'valid' : 'revoked'}">
+              ${isValid ? 'Activa' : 'Revocada'}
+            </span>
+          </td>
+          <td class="td-muted">${fmtDate(l.created_at)}</td>
+          <td class="td-dim">${l.notes || '—'}</td>
+          <td>
+            <div class="td-actions">
+              ${isValid
+                ? `<button class="btn-danger"   data-id="${l.id}" data-action="revoke">Revocar</button>`
+                : `<button class="btn-activate" data-id="${l.id}" data-action="activate">Activar</button>`
+              }
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Attach copy buttons
+    tbody.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const k = btn.getAttribute('data-key');
+        navigator.clipboard.writeText(k).then(() => {
+          const orig = btn.textContent;
+          btn.textContent = '✓';
+          btn.style.color = 'var(--green)';
+          setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+        }).catch(() => {});
+      });
+    });
+
+    // Attach action buttons
+    tbody.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id     = parseInt(btn.getAttribute('data-id'), 10);
+        const action = btn.getAttribute('data-action');
+        const newStatus = action === 'revoke' ? 'REVOKED' : 'VALID';
+        btn.disabled = true;
+        await setStatus(id, newStatus);
+        btn.disabled = false;
+      });
+    });
+  }
+
+  // ════════════════════════════════════════
+  // LOAD LICENSES
+  // ════════════════════════════════════════
+  async function loadLicenses() {
+    const tbody = document.getElementById('licenses-tbody');
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Cargando…</td></tr>`;
+
+    const { data, error } = await db
+      .from('licenses')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:var(--red)">Error al cargar: ${error.message}</td></tr>`;
+      return;
+    }
+
+    licenses = data || [];
+    renderTable();
+  }
+
+  // ════════════════════════════════════════
+  // SET STATUS (REVOKE / ACTIVATE)
+  // ════════════════════════════════════════
+  async function setStatus(id, newStatus) {
+    const { error } = await db
+      .from('licenses')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      alert('Error al actualizar estado: ' + error.message);
+      return;
+    }
+    await loadLicenses();
+  }
+
+  // ════════════════════════════════════════
+  // ADD LICENSE
+  // ════════════════════════════════════════
+  document.getElementById('add-btn').addEventListener('click', async () => {
+    const accountRaw = document.getElementById('input-account').value.trim();
+    const broker     = document.getElementById('input-broker').value.trim();
+    const notes      = document.getElementById('input-notes').value.trim();
+
+    hide('add-error');
+    hide('add-success');
+
+    if (!accountRaw) {
+      setText('add-error', 'El número de cuenta MT4 es obligatorio.');
+      show('add-error');
+      return;
+    }
+
+    const accountLogin = parseInt(accountRaw, 10);
+    if (isNaN(accountLogin) || accountLogin <= 0) {
+      setText('add-error', 'Ingresa un número de cuenta válido (solo dígitos).');
+      show('add-error');
+      return;
+    }
+
+    if (!broker) {
+      setText('add-error', 'El nombre del broker es obligatorio.');
+      show('add-error');
+      return;
+    }
+
+    const licenseKey = previewKey;
+    const btn = document.getElementById('add-btn');
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+
+    const { error } = await db
+      .from('licenses')
+      .insert({
+        license_key:   licenseKey,
+        account_login: accountLogin,
+        broker_name:   broker,
+        status:        'VALID',
+        notes:         notes || null
+      });
+
+    btn.disabled = false;
+    btn.textContent = 'Generar y Agregar Licencia';
+
+    if (error) {
+      setText('add-error', 'Error al guardar: ' + error.message);
+      show('add-error');
+      return;
+    }
+
+    // Auto-copiar al portapapeles
+    navigator.clipboard.writeText(licenseKey).catch(() => {});
+
+    setText('add-success', `✓ Licencia creada y copiada: ${licenseKey}`);
+    show('add-success');
+
+    // Limpiar formulario y generar nueva preview
+    document.getElementById('input-account').value = '';
+    document.getElementById('input-notes').value   = '';
+    refreshPreview();
+    setTimeout(() => hide('add-success'), 6000);
+
+    await loadLicenses();
+  });
+
+  // ════════════════════════════════════════
+  // REFRESH
+  // ════════════════════════════════════════
+  document.getElementById('refresh-btn').addEventListener('click', loadLicenses);
+
+  // ════════════════════════════════════════
+  // KEEP-ALIVE PING
+  // ════════════════════════════════════════
+  document.getElementById('ping-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('ping-btn');
+    btn.disabled = true;
+    btn.textContent = 'Enviando ping…';
+
+    // Un SELECT simple cuenta como actividad de base de datos
+    const { error } = await db.from('licenses').select('id').limit(1);
+
+    btn.disabled = false;
+    btn.textContent = 'Hacer ping a Supabase';
+
+    if (error) {
+      setText('ping-time-text', 'Error en ping: ' + error.message);
+    } else {
+      const now = new Date().toLocaleString('es-DO', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      setText('ping-time-text', `Activo · último ping: ${now}`);
+    }
+    show('ping-result');
+  });
+
+  // ════════════════════════════════════════
+  // LOGOUT
+  // ════════════════════════════════════════
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await db.auth.signOut();
+    hide('dashboard');
+    show('login-screen');
+    document.getElementById('login-email').value    = '';
+    document.getElementById('login-password').value = '';
+    hide('login-error');
+  });
+
+  // ════════════════════════════════════════
+  // LOGIN
+  // ════════════════════════════════════════
+  async function doLogin() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    hide('login-error');
+
+    if (!email || !password) {
+      setText('login-error', 'Ingresa tu email y contraseña.');
+      show('login-error');
+      return;
+    }
+
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true;
+    btn.textContent = 'Ingresando…';
+
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+    btn.disabled = false;
+    btn.textContent = 'Ingresar';
+
+    if (error) {
+      setText('login-error', 'Credenciales incorrectas. Verifica tu email y contraseña.');
+      show('login-error');
+      return;
+    }
+
+    mountDashboard(data.user);
+  }
+
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+  document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function mountDashboard(user) {
+    hide('login-screen');
+    show('dashboard');
+    setText('user-email-display', user.email);
+    refreshPreview();
+    loadLicenses();
+  }
+
+  // ════════════════════════════════════════
+  // AUTO-LOGIN (sesión persistida en el navegador)
+  // ════════════════════════════════════════
+  db.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      mountDashboard(session.user);
+    }
+  });
+</script>
+</body>
+</html>
