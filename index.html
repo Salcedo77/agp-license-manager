@@ -1,969 +1,1003 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AGP License Manager · Best Trades</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:       #07070f;
-      --s1:       #0d0d1c;
-      --s2:       #13132a;
-      --border:   rgba(255,255,255,0.06);
-      --gold:     #c8a84b;
-      --gold-lo:  rgba(200,168,75,0.12);
-      --green:    #3ecf8e;
-      --green-lo: rgba(62,207,142,0.12);
-      --red:      #e05252;
-      --red-lo:   rgba(224,82,82,0.12);
-      --text:     #ddddf0;
-      --text-2:   #8888b0;
-      --text-3:   #44446a;
-      --mono:     'Space Mono', monospace;
-      --ui:       'Sora', sans-serif;
-      --rad:      8px;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--ui);
-      font-size: 14px;
-      min-height: 100vh;
-    }
-
-    /* ── LOGIN ── */
-    #login-screen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(ellipse 60% 60% at 50% 40%, rgba(200,168,75,0.07) 0%, transparent 70%);
-    }
-
-    .login-box {
-      width: 100%;
-      max-width: 400px;
-      padding: 48px 40px;
-      background: var(--s1);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 0 80px rgba(200,168,75,0.05);
-      animation: fadeUp 0.4s ease;
-    }
-
-    .login-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 32px;
-    }
-
-    .logo-icon { font-size: 22px; color: var(--gold); }
-
-    .logo-text {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--text-2);
-    }
-
-    .login-title {
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-    .login-sub {
-      font-size: 13px;
-      color: var(--text-2);
-      margin-bottom: 32px;
-    }
-
-    /* ── FIELDS ── */
-    .field { margin-bottom: 16px; }
-
-    .field label {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-2);
-      margin-bottom: 6px;
-    }
-
-    .field input, .field select {
-      width: 100%;
-      padding: 10px 14px;
-      background: var(--s2);
-      border: 1px solid var(--border);
-      border-radius: var(--rad);
-      color: var(--text);
-      font-family: var(--ui);
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .field input:focus { border-color: rgba(200,168,75,0.5); }
-    .field input::placeholder { color: var(--text-3); }
-
-    /* ── BUTTONS ── */
-    .btn-primary {
-      width: 100%;
-      padding: 11px 20px;
-      background: var(--gold);
-      border: none;
-      border-radius: var(--rad);
-      color: #07070f;
-      font-family: var(--ui);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-    .btn-primary:hover { opacity: 0.88; }
-    .btn-primary:active { transform: scale(0.98); }
-    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
-
-    .btn-secondary {
-      padding: 8px 16px;
-      background: var(--s2);
-      border: 1px solid var(--border);
-      border-radius: var(--rad);
-      color: var(--text-2);
-      font-family: var(--ui);
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-secondary:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
-    .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .btn-danger {
-      padding: 5px 12px;
-      background: transparent;
-      border: 1px solid rgba(224,82,82,0.4);
-      border-radius: 6px;
-      color: var(--red);
-      font-family: var(--ui);
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-danger:hover { background: var(--red-lo); border-color: var(--red); }
-
-    .btn-activate {
-      padding: 5px 12px;
-      background: transparent;
-      border: 1px solid rgba(62,207,142,0.4);
-      border-radius: 6px;
-      color: var(--green);
-      font-family: var(--ui);
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-activate:hover { background: var(--green-lo); border-color: var(--green); }
-
-    /* ── MESSAGES ── */
-    .error-msg {
-      padding: 10px 14px;
-      background: var(--red-lo);
-      border: 1px solid rgba(224,82,82,0.35);
-      border-radius: var(--rad);
-      color: var(--red);
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
-
-    .success-msg {
-      padding: 10px 14px;
-      background: var(--green-lo);
-      border: 1px solid rgba(62,207,142,0.35);
-      border-radius: var(--rad);
-      color: var(--green);
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
-
-    .hidden { display: none !important; }
-
-    /* ── DASHBOARD ── */
-    #dashboard {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      animation: fadeUp 0.3s ease;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 32px;
-      background: var(--s1);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .topbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .topbar-icon { font-size: 16px; color: var(--gold); }
-
-    .topbar-name {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text-2);
-    }
-
-    .topbar-sep { color: var(--text-3); }
-
-    .topbar-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user-email {
-      font-size: 12px;
-      color: var(--text-2);
-    }
-
-    /* ── MAIN ── */
-    .main {
-      flex: 1;
-      padding: 28px 32px;
-      max-width: 1280px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    /* ── STATS ── */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-
-    .stat-card {
-      padding: 20px 24px;
-      background: var(--s1);
-      border: 1px solid var(--border);
-      border-radius: var(--rad);
-    }
-
-    .stat-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-2);
-      margin-bottom: 8px;
-    }
-
-    .stat-value {
-      font-family: var(--mono);
-      font-size: 32px;
-      font-weight: 700;
-    }
-
-    /* ── PANELS ── */
-    .panels {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 20px;
-      align-items: start;
-    }
-
-    .panel {
-      background: var(--s1);
-      border: 1px solid var(--border);
-      border-radius: var(--rad);
-      overflow: hidden;
-    }
-
-    .panel-header {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .panel-title {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-2);
-    }
-
-    .panel-body { padding: 20px; }
-
-    /* ── KEY PREVIEW ── */
-    .key-preview {
-      padding: 14px 16px;
-      background: var(--s2);
-      border: 1px solid rgba(200,168,75,0.2);
-      border-radius: var(--rad);
-      font-family: var(--mono);
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--gold);
-      text-align: center;
-      letter-spacing: 0.06em;
-      margin-bottom: 18px;
-    }
-
-    /* ── TABLE ── */
-    .table-wrap { overflow-x: auto; }
-
-    table { width: 100%; border-collapse: collapse; }
-
-    thead th {
-      padding: 10px 16px;
-      text-align: left;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      transition: background 0.15s;
-    }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: rgba(255,255,255,0.018); }
-
-    td {
-      padding: 12px 16px;
-      font-size: 13px;
-      vertical-align: middle;
-    }
-
-    .td-key {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--gold);
-      white-space: nowrap;
-    }
-
-    .copy-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-3);
-      font-size: 14px;
-      padding: 2px 5px;
-      border-radius: 4px;
-      transition: color 0.2s;
-      line-height: 1;
-    }
-    .copy-btn:hover { color: var(--gold); }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      white-space: nowrap;
-    }
-
-    .badge-valid {
-      background: var(--green-lo);
-      color: var(--green);
-      border: 1px solid rgba(62,207,142,0.2);
-    }
-
-    .badge-revoked {
-      background: var(--red-lo);
-      color: var(--red);
-      border: 1px solid rgba(224,82,82,0.2);
-    }
-
-    .td-mono {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-2);
-    }
-
-    .td-dim { color: var(--text-2); font-size: 12px; }
-    .td-muted { color: var(--text-3); font-size: 12px; }
-
-    .td-actions { display: flex; gap: 6px; }
-
-    /* ── PING ── */
-    .ping-section {
-      margin-top: 18px;
-      padding-top: 18px;
-      border-top: 1px solid var(--border);
-    }
-
-    .ping-info {
-      font-size: 12px;
-      color: var(--text-2);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-
-    .ping-result {
-      margin-top: 10px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-2);
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .ping-dot {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-      flex-shrink: 0;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.2; }
-    }
-
-    .ping-dot.live { animation: blink 1.8s infinite; }
-
-    /* ── EMPTY ── */
-    .empty-state {
-      padding: 48px 24px !important;
-      text-align: center;
-      color: var(--text-3);
-      font-size: 13px;
-    }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 960px) {
-      .panels { grid-template-columns: 1fr; }
-      .main { padding: 20px 16px; }
-      .topbar { padding: 14px 16px; }
-    }
-
-    @media (max-width: 600px) {
-      .stats { grid-template-columns: 1fr 1fr; }
-      .stat-value { font-size: 24px; }
-      .login-box { padding: 36px 24px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGP License Manager · Best Trades</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:        #07080a;
+  --s1:        #0f1014;
+  --s2:        #161820;
+  --s3:        #1e2028;
+  --gold:      #c9a84c;
+  --gold2:     #e8c96a;
+  --gold-dim:  rgba(201,168,76,0.12);
+  --gold-line: rgba(201,168,76,0.25);
+  --text:      #dde0e8;
+  --muted:     #6b7080;
+  --dim:       #9098aa;
+  --blue:      #4d9fff;
+  --blue-dim:  rgba(77,159,255,0.12);
+  --green:     #2ecc71;
+  --green-dim: rgba(46,204,113,0.12);
+  --red:       #e74c3c;
+  --red-dim:   rgba(231,76,60,0.12);
+  --r:         8px;
+  --r2:        12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:3px}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:radial-gradient(ellipse 60% 50% at 50% 40%,rgba(201,168,76,0.07) 0%,transparent 70%)}
+.login-card{width:360px;background:var(--s1);border:1px solid var(--gold-line);border-radius:var(--r2);padding:40px;position:relative;overflow:hidden}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.login-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:11px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+.login-title{font-family:'Syne',sans-serif;font-weight:700;font-size:22px;color:#fff;margin-bottom:4px}
+.login-sub{font-size:11px;color:var(--muted);margin-bottom:32px}
+.form-field{margin-bottom:16px}
+.form-field label{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.form-field input,.form-field select,.form-field textarea{width:100%;background:var(--s2);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r);padding:10px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--gold-line)}
+.form-field select option{background:var(--s2)}
+.form-field textarea{resize:vertical;min-height:72px}
+.btn-primary{width:100%;background:var(--gold);color:#07080a;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:var(--r);padding:12px;cursor:pointer;transition:background .2s,transform .1s}
+.btn-primary:hover{background:var(--gold2)}
+.btn-primary:active{transform:scale(0.98)}
+.login-err{color:var(--red);font-size:12px;margin-top:12px;display:none}
+
+/* ── APP ── */
+#app-screen{display:none;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;background:var(--s1);border-bottom:1px solid var(--gold-line);position:sticky;top:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:12px;letter-spacing:4px;color:var(--gold);text-transform:uppercase}
+.header-sep{color:var(--gold-line);font-size:18px}
+.header-title{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;color:var(--dim)}
+.header-right{display:flex;align-items:center;gap:16px}
+.user-email{font-size:11px;color:var(--muted)}
+.btn-logout{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;padding:5px 12px;border-radius:var(--r);cursor:pointer;transition:all .2s}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+/* MAIN */
+.main{padding:28px;max-width:1400px;width:100%;margin:0 auto;flex:1}
+
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.kpi-card{background:var(--s1);border:1px solid var(--gold-line);border-radius:var(--r2);padding:20px 18px;position:relative;overflow:hidden}
+.kpi-card.accent::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold)}
+.kpi-card.blue::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue)}
+.kpi-label{font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.kpi-value{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:#fff;line-height:1}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:4px}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:12px;margin-bottom:24px}
+.chart-card{background:var(--s1);border:1px solid var(--gold-line);border-radius:var(--r2);padding:20px}
+.chart-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase;margin-bottom:16px}
+.chart-inner{position:relative;height:180px;display:flex;align-items:center;justify-content:center}
+
+/* CONTROLS */
+.controls-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-wrap{flex:1;min-width:220px;position:relative}
+.search-wrap input{width:100%;background:var(--s1);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r);padding:9px 12px 9px 34px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--gold-line)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+.ctrl-select{background:var(--s1);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r);padding:9px 12px;color:var(--dim);font-family:'DM Mono',monospace;font-size:12px;outline:none;cursor:pointer;min-width:130px}
+.ctrl-select:focus{border-color:var(--gold-line)}
+.ctrl-select option{background:var(--s2)}
+.btn-new{background:var(--gold);color:#07080a;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:var(--r);padding:9px 18px;cursor:pointer;white-space:nowrap;transition:background .2s;margin-left:auto}
+.btn-new:hover{background:var(--gold2)}
+
+/* TABLE */
+.table-wrap{background:var(--s1);border:1px solid var(--gold-line);border-radius:var(--r2);overflow:hidden;margin-bottom:16px}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--s2);padding:11px 14px;text-align:left;font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;border-bottom:1px solid var(--gold-line)}
+thead th:hover{color:var(--gold2)}
+thead th.sort-asc::after{content:'  ▲';font-size:8px}
+thead th.sort-desc::after{content:'  ▼';font-size:8px}
+tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--gold-dim)}
+td{padding:11px 14px;font-size:12px;vertical-align:middle}
+.td-key{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold2);letter-spacing:.5px}
+.td-account{font-family:'DM Mono',monospace;font-size:12px;color:var(--text)}
+.td-holder{color:var(--text)}
+.td-muted{color:var(--dim);font-size:11px}
+.badge{display:inline-block;font-size:9px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:4px}
+.badge.valid{background:var(--green-dim);color:var(--green)}
+.badge.revoked{background:var(--red-dim);color:var(--red)}
+.badge.master{background:var(--gold-dim);color:var(--gold)}
+.badge.broker-just{background:rgba(201,168,76,0.1);color:var(--gold)}
+.badge.broker-exness{background:var(--blue-dim);color:var(--blue)}
+.td-actions{display:flex;gap:6px;align-items:center}
+.btn-edit,.btn-revoke,.btn-restore{border:none;border-radius:var(--r);font-size:11px;padding:5px 10px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s}
+.btn-edit{background:rgba(255,255,255,0.06);color:var(--dim)}
+.btn-edit:hover{background:rgba(255,255,255,0.12);color:var(--text)}
+.btn-revoke{background:var(--red-dim);color:var(--red)}
+.btn-revoke:hover{background:rgba(231,76,60,0.25)}
+.btn-restore{background:var(--green-dim);color:var(--green)}
+.btn-restore:hover{background:rgba(46,204,113,0.25)}
+.empty-row td{text-align:center;padding:40px;color:var(--muted);font-size:12px}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:4px 0 20px}
+.page-info{font-size:11px;color:var(--muted)}
+.page-btns{display:flex;gap:6px}
+.btn-page{background:var(--s1);border:1px solid rgba(255,255,255,0.08);color:var(--dim);font-family:'DM Mono',monospace;font-size:11px;padding:5px 12px;border-radius:var(--r);cursor:pointer;transition:all .15s}
+.btn-page:hover:not(:disabled){border-color:var(--gold-line);color:var(--gold)}
+.btn-page:disabled{opacity:.3;cursor:default}
+.btn-page.active{background:var(--gold-dim);border-color:var(--gold-line);color:var(--gold)}
+
+/* KEEPALIVE */
+.keepalive-zone{background:var(--s1);border:1px solid var(--gold-line);border-radius:var(--r2);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ka-label{font-size:11px;color:var(--muted);max-width:480px;line-height:1.6}
+.btn-ping{background:transparent;border:1px solid var(--gold-line);color:var(--gold);font-family:'DM Mono',monospace;font-size:11px;padding:7px 16px;border-radius:var(--r);cursor:pointer;transition:all .2s}
+.btn-ping:hover{background:var(--gold-dim)}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--s1);border:1px solid var(--gold-line);border-radius:var(--r2);width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
+.modal-header h2{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:#fff}
+.btn-close{background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:0}
+.btn-close:hover{color:var(--text)}
+.modal-body{padding:20px 24px}
+.key-preview{background:var(--s2);border:1px solid var(--gold-line);border-radius:var(--r);padding:10px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--gold2);letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.btn-regen{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-size:10px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .15s}
+.btn-regen:hover{border-color:var(--gold-line);color:var(--gold)}
+.modal-footer{padding:16px 24px 20px;display:flex;gap:8px;justify-content:flex-end}
+.btn-cancel{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--dim);font-family:'DM Mono',monospace;font-size:12px;padding:8px 18px;border-radius:var(--r);cursor:pointer;transition:all .15s}
+.btn-cancel:hover{border-color:rgba(255,255,255,0.25);color:var(--text)}
+.btn-save{background:var(--gold);color:#07080a;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:var(--r);padding:8px 20px;cursor:pointer;transition:background .15s}
+.btn-save:hover{background:var(--gold2)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.toggle-label{font-size:11px;color:var(--dim)}
+.toggle-desc{font-size:10px;color:var(--muted);margin-top:2px}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--s3);border-radius:10px;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--gold-dim);border:1px solid var(--gold)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(16px);background:var(--gold)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* TOAST */
+#toast{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-item{background:var(--s2);border-radius:var(--r);padding:12px 16px;font-size:12px;color:var(--text);border-left:3px solid var(--green);box-shadow:0 4px 20px rgba(0,0,0,.5);animation:toastIn .3s ease;max-width:300px}
+.toast-item.error{border-left-color:var(--red)}
+.toast-item.info{border-left-color:var(--gold)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateX(20px)}}
+
+/* CONFIRM DIALOG */
+#modal-confirm .modal-box{max-width:380px}
+.confirm-msg{font-size:13px;color:var(--dim);line-height:1.7;padding-top:4px}
+.btn-confirm-yes{background:var(--red);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;border:none;border-radius:var(--r);padding:8px 20px;cursor:pointer;transition:background .15s}
+.btn-confirm-yes:hover{background:#c0392b}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+  .charts-grid{grid-template-columns:1fr 1fr}
+  .charts-grid .chart-card:last-child{grid-column:span 2}
+}
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .charts-grid{grid-template-columns:1fr}
+  .charts-grid .chart-card:last-child{grid-column:auto}
+}
+</style>
 </head>
 <body>
 
-<!-- ════════════════════════ LOGIN ════════════════════════ -->
+<!-- ═══════════════════════════════ LOGIN ═══════════════════════════════ -->
 <div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">
-      <span class="logo-icon">◈</span>
-      <span class="logo-text">Best Trades</span>
-    </div>
-    <h1 class="login-title">AGP License Manager</h1>
-    <p class="login-sub">Panel de administración de licencias</p>
-    <div class="field">
+  <div class="login-card">
+    <div class="login-logo">◈ Best Trades</div>
+    <div class="login-title">AGP License Manager</div>
+    <div class="login-sub">Panel de administración de licencias</div>
+    <div class="form-field">
       <label>Email</label>
-      <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email" />
+      <input type="email" id="login-email" placeholder="admin@besttrades.com" autocomplete="email">
     </div>
-    <div class="field">
+    <div class="form-field">
       <label>Contraseña</label>
-      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <div id="login-error" class="error-msg hidden"></div>
-    <button class="btn-primary" id="login-btn">Ingresar</button>
+    <button class="btn-primary" onclick="doLogin()">Ingresar</button>
+    <div class="login-err" id="login-err"></div>
   </div>
 </div>
 
-<!-- ════════════════════════ DASHBOARD ════════════════════════ -->
-<div id="dashboard" class="hidden">
-
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-brand">
-        <span class="topbar-icon">◈</span>
-        <span class="topbar-name">Best Trades</span>
-      </div>
-      <span class="topbar-sep">·</span>
-      <span class="topbar-title">AGP License Manager</span>
+<!-- ═══════════════════════════════ APP ══════════════════════════════════ -->
+<div id="app-screen">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <span class="header-logo">◈ Best Trades</span>
+      <span class="header-sep">·</span>
+      <span class="header-title">AGP License Manager</span>
     </div>
-    <div class="topbar-right">
+    <div class="header-right">
       <span class="user-email" id="user-email-display"></span>
-      <button class="btn-secondary" id="logout-btn">Cerrar sesión</button>
+      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
     </div>
-  </div>
+  </header>
 
+  <!-- MAIN -->
   <div class="main">
 
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-label">Total Licencias</div>
-        <div class="stat-value" id="stat-total" style="color: var(--gold)">—</div>
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Total Licencias</div>
+        <div class="kpi-value" id="kpi-total">—</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Activas</div>
-        <div class="stat-value" id="stat-active" style="color: var(--green)">—</div>
+      <div class="kpi-card">
+        <div class="kpi-label">Activas</div>
+        <div class="kpi-value" id="kpi-valid" style="color:var(--green)">—</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Revocadas</div>
-        <div class="stat-value" id="stat-revoked" style="color: var(--red)">—</div>
+      <div class="kpi-card">
+        <div class="kpi-label">Revocadas</div>
+        <div class="kpi-value" id="kpi-revoked" style="color:var(--red)">—</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Just Markets</div>
+        <div class="kpi-value" id="kpi-just" style="color:var(--gold)">—</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Exness</div>
+        <div class="kpi-value" id="kpi-exness" style="color:var(--blue)">—</div>
       </div>
     </div>
 
-    <div class="panels">
-
-      <!-- ── Left column ── -->
-      <div>
-
-        <!-- New license form -->
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title">Nueva Licencia</span>
-          </div>
-          <div class="panel-body">
-            <div class="key-preview" id="key-preview">AGP-????-????</div>
-            <div class="field">
-              <label>Número de cuenta MT4 *</label>
-              <input type="number" id="input-account" placeholder="Ej: 8396952" />
-            </div>
-            <div class="field">
-              <label>Broker</label>
-              <input type="text" id="input-broker" value="Just Markets" />
-            </div>
-            <div class="field">
-              <label>Notas (opcional)</label>
-              <input type="text" id="input-notes" placeholder="Nombre del cliente, fecha de pago…" />
-            </div>
-            <div id="add-error"   class="error-msg hidden"></div>
-            <div id="add-success" class="success-msg hidden"></div>
-            <button class="btn-primary" id="add-btn">Generar y Agregar Licencia</button>
-          </div>
-        </div>
-
-        <!-- Keep-alive ping -->
-        <div class="panel" style="margin-top: 16px;">
-          <div class="panel-header">
-            <span class="panel-title">Keep-Alive</span>
-          </div>
-          <div class="panel-body">
-            <p class="ping-info">
-              Supabase pausa proyectos inactivos después de 7 días. Cada operación en la tabla
-              (agregar, revocar, actualizar) cuenta como actividad. Si no has operado en varios
-              días, haz ping manual aquí.
-            </p>
-            <button class="btn-secondary" id="ping-btn" style="width:100%">Hacer ping a Supabase</button>
-            <div id="ping-result" class="ping-result hidden">
-              <span class="ping-dot live"></span>
-              <span id="ping-time-text"></span>
-            </div>
-          </div>
-        </div>
-
+    <!-- CHARTS -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Estado</div>
+        <div class="chart-inner"><canvas id="chart-status"></canvas></div>
       </div>
+      <div class="chart-card">
+        <div class="chart-title">Broker</div>
+        <div class="chart-inner"><canvas id="chart-broker"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Registro por Mes</div>
+        <div class="chart-inner" style="height:180px"><canvas id="chart-timeline"></canvas></div>
+      </div>
+    </div>
 
-      <!-- ── Right column: table ── -->
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">Licencias Registradas</span>
-          <button class="btn-secondary" id="refresh-btn" style="padding: 5px 12px; font-size: 12px;">↻ Actualizar</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Clave de Licencia</th>
-                <th>Cuenta MT4</th>
-                <th>Broker</th>
-                <th>Estado</th>
-                <th>Creada</th>
-                <th>Notas</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="licenses-tbody">
-              <tr><td colspan="7" class="empty-state">Cargando licencias…</td></tr>
-            </tbody>
-          </table>
+    <!-- CONTROLS -->
+    <div class="controls-bar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="search" id="search-input" placeholder="Titular, cuenta MT4, clave de licencia…" oninput="applyFilters()">
+      </div>
+      <select class="ctrl-select" id="filter-status" onchange="applyFilters()">
+        <option value="">Todos los estados</option>
+        <option value="VALID">Activas</option>
+        <option value="REVOKED">Revocadas</option>
+      </select>
+      <select class="ctrl-select" id="filter-broker" onchange="applyFilters()">
+        <option value="">Todos los brokers</option>
+        <option value="just">Just Markets</option>
+        <option value="exness">Exness</option>
+      </select>
+      <button class="btn-new" onclick="openCreateModal()">+ Nueva Licencia</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="setSort('license_key')">Clave</th>
+            <th onclick="setSort('holder_name')">Titular</th>
+            <th onclick="setSort('account_login')">Cuenta MT4</th>
+            <th onclick="setSort('broker_name')">Broker</th>
+            <th onclick="setSort('status')">Estado</th>
+            <th>Maestra</th>
+            <th onclick="setSort('created_at')">Creada</th>
+            <th>Notas</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr class="empty-row"><td colspan="9">Cargando licencias…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <span class="page-info" id="page-info"></span>
+      <div class="page-btns" id="page-btns"></div>
+    </div>
+
+    <!-- KEEP-ALIVE -->
+    <div class="keepalive-zone">
+      <div class="ka-label">
+        <strong style="color:var(--gold)">Keep-Alive —</strong>
+        Supabase pausa proyectos gratuitos después de 7 días de inactividad.
+        Si no has operado recientemente, haz ping manual.
+      </div>
+      <button class="btn-ping" onclick="doPing()">Hacer Ping</button>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app-screen -->
+
+<!-- ═══════════════════════════ MODAL CREAR ══════════════════════════════ -->
+<div class="modal-overlay" id="modal-create">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Nueva Licencia</h2>
+      <button class="btn-close" onclick="closeModal('modal-create')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Clave de Licencia</label>
+        <div class="key-preview">
+          <span id="create-key-preview">AGP-XXXX-XXXX</span>
+          <button class="btn-regen" onclick="regenKey()">↻ Regenerar</button>
         </div>
       </div>
-
+      <div class="form-row">
+        <div class="form-field">
+          <label>Titular</label>
+          <input type="text" id="create-holder" placeholder="Nombre del cliente">
+        </div>
+        <div class="form-field">
+          <label>Cuenta MT4 *</label>
+          <input type="number" id="create-account" placeholder="ej. 123456789">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Broker *</label>
+          <select id="create-broker">
+            <option value="just_markets">Just Markets</option>
+            <option value="exness">Exness</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Expiración (opcional)</label>
+          <input type="date" id="create-expires">
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Notas</label>
+        <textarea id="create-notes" placeholder="Información adicional del cliente…"></textarea>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Licencia Maestra</div>
+          <div class="toggle-desc">Omite chequeo de cuenta y broker — solo para uso interno</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="create-master" onchange="onMasterToggle('create')">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-create')">Cancelar</button>
+      <button class="btn-save" onclick="submitCreate()">Generar y Agregar</button>
     </div>
   </div>
 </div>
 
+<!-- ═══════════════════════════ MODAL EDITAR ═════════════════════════════ -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Editar Licencia</h2>
+      <button class="btn-close" onclick="closeModal('modal-edit')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Clave de Licencia (no editable)</label>
+        <div class="key-preview">
+          <span id="edit-key-display" style="color:var(--dim)">—</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Titular</label>
+          <input type="text" id="edit-holder" placeholder="Nombre del cliente">
+        </div>
+        <div class="form-field">
+          <label>Cuenta MT4</label>
+          <input type="number" id="edit-account" placeholder="ej. 123456789">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Broker</label>
+          <select id="edit-broker">
+            <option value="just_markets">Just Markets</option>
+            <option value="exness">Exness</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Estado</label>
+          <select id="edit-status">
+            <option value="VALID">Activa</option>
+            <option value="REVOKED">Revocada</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Expiración (opcional)</label>
+        <input type="date" id="edit-expires">
+      </div>
+      <div class="form-field">
+        <label>Notas</label>
+        <textarea id="edit-notes" placeholder="Información adicional del cliente…"></textarea>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Licencia Maestra</div>
+          <div class="toggle-desc">Omite chequeo de cuenta y broker — solo para uso interno</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="edit-master">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-edit')">Cancelar</button>
+      <button class="btn-save" onclick="submitEdit()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ MODAL CONFIRMAR ══════════════════════════ -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="confirm-title">Confirmar acción</h2>
+      <button class="btn-close" onclick="closeModal('modal-confirm')">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-msg" id="confirm-msg">¿Estás seguro?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-confirm')">Cancelar</button>
+      <button class="btn-confirm-yes" id="confirm-yes-btn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════ JS ════════════════════════════════════ -->
 <script>
-  // ════════════════════════════════════════
-  // CONFIG
-  // ════════════════════════════════════════
-  const SUPABASE_URL = 'https://zhjinfbqugdkzmykezed.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_Pty3YZ4__Sptt2IHeTAH0A_O4yXzLOX';
+// ── CONFIG ──────────────────────────────────────────────────────────────
+const SB_URL = 'https://zhjinfbqugdkzmykezed.supabase.co';
+const SB_KEY = 'sb_publishable_Pty3YZ4__Sptt2IHeTAH0A_O4yXzLOX';
+const { createClient } = supabase;
+const sb = createClient(SB_URL, SB_KEY);
 
-  const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+// ── STATE ────────────────────────────────────────────────────────────────
+let allLicenses = [];
+let filtered    = [];
+let page        = 1;
+let sortCol     = 'created_at';
+let sortDir     = 'desc';
+const PAGE      = 15;
+let editingKey  = null;
+let pendingKey  = genKey();
+let chartStatus = null, chartBroker = null, chartTime = null;
 
-  // ════════════════════════════════════════
-  // STATE
-  // ════════════════════════════════════════
-  let licenses = [];
-  let previewKey = '';
+// ── BROKER UTILS ─────────────────────────────────────────────────────────
+function brokerDisplay(code) {
+  if (!code) return '—';
+  const l = code.toLowerCase();
+  if (l.includes('just'))   return 'Just Markets';
+  if (l.includes('exness')) return 'Exness';
+  return code;
+}
+function brokerClass(code) {
+  const l = (code||'').toLowerCase();
+  if (l.includes('just'))   return 'broker-just';
+  if (l.includes('exness')) return 'broker-exness';
+  return '';
+}
 
-  // ════════════════════════════════════════
-  // UTILS
-  // ════════════════════════════════════════
-  function generateKey() {
-    // Excluye caracteres ambiguos: O, 0, I, 1
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    const rand = (n) => Array.from({length: n}, () =>
-      chars[Math.floor(Math.random() * chars.length)]).join('');
-    return `AGP-${rand(4)}-${rand(4)}`;
-  }
+// ── KEY GENERATOR ────────────────────────────────────────────────────────
+function genKey() {
+  const C = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const s = () => Array.from({length:4},()=>C[Math.floor(Math.random()*C.length)]).join('');
+  return `AGP-${s()}-${s()}`;
+}
+function regenKey() {
+  pendingKey = genKey();
+  document.getElementById('create-key-preview').textContent = pendingKey;
+}
 
-  function refreshPreview() {
-    previewKey = generateKey();
-    document.getElementById('key-preview').textContent = previewKey;
-  }
+// ── AUTH ─────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-err');
+  err.style.display = 'none';
+  if (!email || !pass) { err.textContent = 'Completa todos los campos.'; err.style.display='block'; return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { err.textContent = 'Credenciales incorrectas.'; err.style.display='block'; }
+}
 
-  function fmtDate(str) {
-    if (!str) return '—';
-    return new Date(str).toLocaleDateString('es-DO', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-  }
+async function doLogout() {
+  await sb.auth.signOut();
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
 
-  function show(id) { document.getElementById(id).classList.remove('hidden'); }
-  function hide(id) { document.getElementById(id).classList.add('hidden'); }
-  function setText(id, t) { document.getElementById(id).textContent = t; }
+function showApp(email) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display   = 'flex';
+  if (email) document.getElementById('user-email-display').textContent = email;
+}
 
-  // ════════════════════════════════════════
-  // RENDER TABLE
-  // ════════════════════════════════════════
-  function renderTable() {
-    const total   = licenses.length;
-    const active  = licenses.filter(l => l.status === 'VALID').length;
-    const revoked = licenses.filter(l => l.status === 'REVOKED').length;
+// ── DATA ─────────────────────────────────────────────────────────────────
+async function loadLicenses() {
+  const { data, error } = await sb.from('licenses').select('*').order('created_at', { ascending: false });
+  if (error) { showToast('Error al cargar licencias: ' + error.message, 'error'); return; }
+  allLicenses = data || [];
+  applyFilters();
+  updateKPIs();
+  updateCharts();
+}
 
-    setText('stat-total',   total);
-    setText('stat-active',  active);
-    setText('stat-revoked', revoked);
+// ── FILTERS ──────────────────────────────────────────────────────────────
+function applyFilters() {
+  const q      = (document.getElementById('search-input').value||'').toLowerCase();
+  const fStat  = document.getElementById('filter-status').value;
+  const fBrk   = document.getElementById('filter-broker').value;
 
-    const tbody = document.getElementById('licenses-tbody');
-
-    if (total === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No hay licencias registradas aún.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = licenses.map(l => {
-      const isValid = l.status === 'VALID';
-      const key = l.license_key || '';
-      const safeKey = key.replace(/'/g, "\\'");
-      return `
-        <tr>
-          <td>
-            <div class="td-key">
-              ${key}
-              <button class="copy-btn" data-key="${safeKey}" title="Copiar clave">⧉</button>
-            </div>
-          </td>
-          <td class="td-mono">${l.account_login || '—'}</td>
-          <td class="td-dim">${l.broker_name || '—'}</td>
-          <td>
-            <span class="badge badge-${isValid ? 'valid' : 'revoked'}">
-              ${isValid ? 'Activa' : 'Revocada'}
-            </span>
-          </td>
-          <td class="td-muted">${fmtDate(l.created_at)}</td>
-          <td class="td-dim">${l.notes || '—'}</td>
-          <td>
-            <div class="td-actions">
-              ${isValid
-                ? `<button class="btn-danger"   data-id="${l.id}" data-action="revoke">Revocar</button>`
-                : `<button class="btn-activate" data-id="${l.id}" data-action="activate">Activar</button>`
-              }
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    // Attach copy buttons
-    tbody.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const k = btn.getAttribute('data-key');
-        navigator.clipboard.writeText(k).then(() => {
-          const orig = btn.textContent;
-          btn.textContent = '✓';
-          btn.style.color = 'var(--green)';
-          setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
-        }).catch(() => {});
-      });
-    });
-
-    // Attach action buttons
-    tbody.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id     = parseInt(btn.getAttribute('data-id'), 10);
-        const action = btn.getAttribute('data-action');
-        const newStatus = action === 'revoke' ? 'REVOKED' : 'VALID';
-        btn.disabled = true;
-        await setStatus(id, newStatus);
-        btn.disabled = false;
-      });
-    });
-  }
-
-  // ════════════════════════════════════════
-  // LOAD LICENSES
-  // ════════════════════════════════════════
-  async function loadLicenses() {
-    const tbody = document.getElementById('licenses-tbody');
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Cargando…</td></tr>`;
-
-    const { data, error } = await db
-      .from('licenses')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:var(--red)">Error al cargar: ${error.message}</td></tr>`;
-      return;
-    }
-
-    licenses = data || [];
-    renderTable();
-  }
-
-  // ════════════════════════════════════════
-  // SET STATUS (REVOKE / ACTIVATE)
-  // ════════════════════════════════════════
-  async function setStatus(id, newStatus) {
-    const { error } = await db
-      .from('licenses')
-      .update({ status: newStatus })
-      .eq('id', id);
-
-    if (error) {
-      alert('Error al actualizar estado: ' + error.message);
-      return;
-    }
-    await loadLicenses();
-  }
-
-  // ════════════════════════════════════════
-  // ADD LICENSE
-  // ════════════════════════════════════════
-  document.getElementById('add-btn').addEventListener('click', async () => {
-    const accountRaw = document.getElementById('input-account').value.trim();
-    const broker     = document.getElementById('input-broker').value.trim();
-    const notes      = document.getElementById('input-notes').value.trim();
-
-    hide('add-error');
-    hide('add-success');
-
-    if (!accountRaw) {
-      setText('add-error', 'El número de cuenta MT4 es obligatorio.');
-      show('add-error');
-      return;
-    }
-
-    const accountLogin = parseInt(accountRaw, 10);
-    if (isNaN(accountLogin) || accountLogin <= 0) {
-      setText('add-error', 'Ingresa un número de cuenta válido (solo dígitos).');
-      show('add-error');
-      return;
-    }
-
-    if (!broker) {
-      setText('add-error', 'El nombre del broker es obligatorio.');
-      show('add-error');
-      return;
-    }
-
-    const licenseKey = previewKey;
-    const btn = document.getElementById('add-btn');
-    btn.disabled = true;
-    btn.textContent = 'Guardando…';
-
-    const { error } = await db
-      .from('licenses')
-      .insert({
-        license_key:   licenseKey,
-        account_login: accountLogin,
-        broker_name:   broker,
-        status:        'VALID',
-        notes:         notes || null
-      });
-
-    btn.disabled = false;
-    btn.textContent = 'Generar y Agregar Licencia';
-
-    if (error) {
-      setText('add-error', 'Error al guardar: ' + error.message);
-      show('add-error');
-      return;
-    }
-
-    // Auto-copiar al portapapeles
-    navigator.clipboard.writeText(licenseKey).catch(() => {});
-
-    setText('add-success', `✓ Licencia creada y copiada: ${licenseKey}`);
-    show('add-success');
-
-    // Limpiar formulario y generar nueva preview
-    document.getElementById('input-account').value = '';
-    document.getElementById('input-notes').value   = '';
-    refreshPreview();
-    setTimeout(() => hide('add-success'), 6000);
-
-    await loadLicenses();
+  filtered = allLicenses.filter(lic => {
+    const matchQ = !q ||
+      (lic.holder_name||'').toLowerCase().includes(q) ||
+      (lic.notes||'').toLowerCase().includes(q) ||
+      (lic.license_key||'').toLowerCase().includes(q) ||
+      String(lic.account_login||'').includes(q);
+    const matchS = !fStat || lic.status === fStat;
+    const bL = (lic.broker_name||'').toLowerCase();
+    const matchB = !fBrk ||
+      (fBrk==='just'   && bL.includes('just'))   ||
+      (fBrk==='exness' && bL.includes('exness'));
+    return matchQ && matchS && matchB;
   });
 
-  // ════════════════════════════════════════
-  // REFRESH
-  // ════════════════════════════════════════
-  document.getElementById('refresh-btn').addEventListener('click', loadLicenses);
-
-  // ════════════════════════════════════════
-  // KEEP-ALIVE PING
-  // ════════════════════════════════════════
-  document.getElementById('ping-btn').addEventListener('click', async () => {
-    const btn = document.getElementById('ping-btn');
-    btn.disabled = true;
-    btn.textContent = 'Enviando ping…';
-
-    // Un SELECT simple cuenta como actividad de base de datos
-    const { error } = await db.from('licenses').select('id').limit(1);
-
-    btn.disabled = false;
-    btn.textContent = 'Hacer ping a Supabase';
-
-    if (error) {
-      setText('ping-time-text', 'Error en ping: ' + error.message);
-    } else {
-      const now = new Date().toLocaleString('es-DO', {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-      setText('ping-time-text', `Activo · último ping: ${now}`);
-    }
-    show('ping-result');
+  // Sort
+  filtered.sort((a, b) => {
+    let av = a[sortCol] ?? '';
+    let bv = b[sortCol] ?? '';
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    if (av < bv) return sortDir === 'asc' ? -1 :  1;
+    if (av > bv) return sortDir === 'asc' ?  1 : -1;
+    return 0;
   });
 
-  // ════════════════════════════════════════
-  // LOGOUT
-  // ════════════════════════════════════════
-  document.getElementById('logout-btn').addEventListener('click', async () => {
-    await db.auth.signOut();
-    hide('dashboard');
-    show('login-screen');
-    document.getElementById('login-email').value    = '';
-    document.getElementById('login-password').value = '';
-    hide('login-error');
+  page = 1;
+  renderTable();
+  renderPagination();
+}
+
+function setSort(col) {
+  if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortCol = col; sortDir = 'asc'; }
+  document.querySelectorAll('thead th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
   });
+  const idx = ['license_key','holder_name','account_login','broker_name','status','','created_at','',''].indexOf(col);
+  if (idx >= 0) {
+    const th = document.querySelectorAll('thead th')[idx];
+    if (th) th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+  }
+  applyFilters();
+}
 
-  // ════════════════════════════════════════
-  // LOGIN
-  // ════════════════════════════════════════
-  async function doLogin() {
-    const email    = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
+// ── RENDER TABLE ─────────────────────────────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('table-body');
+  const start = (page-1)*PAGE;
+  const slice = filtered.slice(start, start+PAGE);
 
-    hide('login-error');
-
-    if (!email || !password) {
-      setText('login-error', 'Ingresa tu email y contraseña.');
-      show('login-error');
-      return;
-    }
-
-    const btn = document.getElementById('login-btn');
-    btn.disabled = true;
-    btn.textContent = 'Ingresando…';
-
-    const { data, error } = await db.auth.signInWithPassword({ email, password });
-
-    btn.disabled = false;
-    btn.textContent = 'Ingresar';
-
-    if (error) {
-      setText('login-error', 'Credenciales incorrectas. Verifica tu email y contraseña.');
-      show('login-error');
-      return;
-    }
-
-    mountDashboard(data.user);
+  if (!slice.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">${filtered.length===0&&allLicenses.length>0?'Sin resultados para esta búsqueda.':'No hay licencias registradas aún.'}</td></tr>`;
+    return;
   }
 
-  document.getElementById('login-btn').addEventListener('click', doLogin);
-  document.getElementById('login-password').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
+  tbody.innerHTML = slice.map(lic => {
+    const isValid   = lic.status === 'VALID';
+    const created   = lic.created_at ? new Date(lic.created_at).toLocaleDateString('es-DO',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+    const notes     = (lic.notes||'').length > 28 ? lic.notes.substring(0,28)+'…' : (lic.notes||'—');
+    const holder    = lic.holder_name || '—';
+    const bDisplay  = brokerDisplay(lic.broker_name);
+    const bClass    = brokerClass(lic.broker_name);
+    return `<tr>
+      <td><span class="td-key">${esc(lic.license_key)}</span></td>
+      <td class="td-holder">${esc(holder)}</td>
+      <td class="td-account">${lic.account_login||'—'}</td>
+      <td><span class="badge ${bClass}">${bDisplay}</span></td>
+      <td><span class="badge ${isValid?'valid':'revoked'}">${isValid?'ACTIVA':'REVOCADA'}</span></td>
+      <td>${lic.is_master?'<span class="badge master">◈ Master</span>':'<span style="color:var(--muted);font-size:11px">—</span>'}</td>
+      <td class="td-muted">${created}</td>
+      <td class="td-muted" title="${esc(lic.notes||'')}"> ${esc(notes)}</td>
+      <td><div class="td-actions">
+        <button class="btn-edit" onclick="openEditModal(${JSON.stringify(JSON.stringify(lic))})">Editar</button>
+        ${isValid
+          ? `<button class="btn-revoke" onclick="confirmRevoke('${esc(lic.license_key)}')">Revocar</button>`
+          : `<button class="btn-restore" onclick="confirmRestore('${esc(lic.license_key)}')">Restaurar</button>`}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── PAGINATION ───────────────────────────────────────────────────────────
+function renderPagination() {
+  const total = filtered.length;
+  const pages = Math.ceil(total/PAGE) || 1;
+  const start = (page-1)*PAGE+1;
+  const end   = Math.min(page*PAGE, total);
+  document.getElementById('page-info').textContent = total > 0
+    ? `Mostrando ${start}–${end} de ${total} licencias`
+    : 'Sin resultados';
+
+  const btns = document.getElementById('page-btns');
+  let html = `<button class="btn-page" onclick="goPage(${page-1})" ${page<=1?'disabled':''}>← Ant</button>`;
+  const range = getPageRange(page, pages);
+  range.forEach(p => {
+    if (p === '…') html += `<span class="btn-page" style="cursor:default">…</span>`;
+    else html += `<button class="btn-page ${p===page?'active':''}" onclick="goPage(${p})">${p}</button>`;
   });
+  html += `<button class="btn-page" onclick="goPage(${page+1})" ${page>=pages?'disabled':''}>Sig →</button>`;
+  btns.innerHTML = html;
+}
 
-  function mountDashboard(user) {
-    hide('login-screen');
-    show('dashboard');
-    setText('user-email-display', user.email);
-    refreshPreview();
-    loadLicenses();
-  }
+function getPageRange(cur, total) {
+  if (total <= 7) return Array.from({length:total},(_,i)=>i+1);
+  if (cur <= 4) return [1,2,3,4,5,'…',total];
+  if (cur >= total-3) return [1,'…',total-4,total-3,total-2,total-1,total];
+  return [1,'…',cur-1,cur,cur+1,'…',total];
+}
 
-  // ════════════════════════════════════════
-  // AUTO-LOGIN (sesión persistida en el navegador)
-  // ════════════════════════════════════════
-  db.auth.getSession().then(({ data: { session } }) => {
-    if (session) {
-      mountDashboard(session.user);
+function goPage(p) {
+  const total = filtered.length;
+  const pages = Math.ceil(total/PAGE) || 1;
+  if (p < 1 || p > pages) return;
+  page = p;
+  renderTable();
+  renderPagination();
+}
+
+// ── KPIs ─────────────────────────────────────────────────────────────────
+function updateKPIs() {
+  const total   = allLicenses.length;
+  const valid   = allLicenses.filter(l=>l.status==='VALID').length;
+  const revoked = allLicenses.filter(l=>l.status==='REVOKED').length;
+  const just    = allLicenses.filter(l=>(l.broker_name||'').toLowerCase().includes('just')).length;
+  const exness  = allLicenses.filter(l=>(l.broker_name||'').toLowerCase().includes('exness')).length;
+  document.getElementById('kpi-total').textContent   = total;
+  document.getElementById('kpi-valid').textContent   = valid;
+  document.getElementById('kpi-revoked').textContent = revoked;
+  document.getElementById('kpi-just').textContent    = just;
+  document.getElementById('kpi-exness').textContent  = exness;
+}
+
+// ── CHARTS ───────────────────────────────────────────────────────────────
+Chart.defaults.color = '#6b7080';
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 11;
+
+function updateCharts() {
+  const valid   = allLicenses.filter(l=>l.status==='VALID').length;
+  const revoked = allLicenses.filter(l=>l.status==='REVOKED').length;
+  const just    = allLicenses.filter(l=>(l.broker_name||'').toLowerCase().includes('just')).length;
+  const exness  = allLicenses.filter(l=>(l.broker_name||'').toLowerCase().includes('exness')).length;
+  const other   = allLicenses.length - just - exness;
+
+  // Status donut
+  if (chartStatus) chartStatus.destroy();
+  chartStatus = new Chart(document.getElementById('chart-status'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Activas','Revocadas'],
+      datasets: [{
+        data: [valid, revoked],
+        backgroundColor: ['rgba(201,168,76,0.8)','rgba(231,76,60,0.5)'],
+        borderColor: ['#c9a84c','#e74c3c'],
+        borderWidth: 2,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'65%',
+      plugins: {
+        legend: { position:'bottom', labels:{boxWidth:10,padding:14,color:'#9098aa'} },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw}` } }
+      }
     }
   });
+
+  // Broker bar
+  if (chartBroker) chartBroker.destroy();
+  chartBroker = new Chart(document.getElementById('chart-broker'), {
+    type: 'bar',
+    data: {
+      labels: ['Just Markets','Exness', other>0?'Otros':''].filter(Boolean),
+      datasets: [{
+        data: [just, exness, other>0?other:null].filter(v=>v!==null),
+        backgroundColor: ['rgba(201,168,76,0.7)','rgba(77,159,255,0.7)','rgba(150,150,150,0.4)'],
+        borderColor:     ['#c9a84c','#4d9fff','#888'],
+        borderWidth: 2, borderRadius: 6
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:false} },
+      scales: {
+        x: { grid:{display:false}, ticks:{color:'#6b7080'} },
+        y: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7080',stepSize:1} }
+      }
+    }
+  });
+
+  // Timeline
+  const months = {};
+  const now = new Date();
+  for (let i=5; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const k = d.toLocaleDateString('es-DO',{month:'short',year:'2-digit'});
+    months[k] = 0;
+  }
+  allLicenses.forEach(lic => {
+    if (!lic.created_at) return;
+    const d = new Date(lic.created_at);
+    const k = d.toLocaleDateString('es-DO',{month:'short',year:'2-digit'});
+    if (months[k] !== undefined) months[k]++;
+  });
+
+  if (chartTime) chartTime.destroy();
+  chartTime = new Chart(document.getElementById('chart-timeline'), {
+    type:'line',
+    data:{
+      labels: Object.keys(months),
+      datasets:[{
+        label:'Licencias',
+        data: Object.values(months),
+        borderColor:'#c9a84c', backgroundColor:'rgba(201,168,76,0.08)',
+        borderWidth:2, pointBackgroundColor:'#c9a84c', pointRadius:4,
+        fill:true, tension:0.3
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:'#6b7080'} },
+        y:{ grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7080',stepSize:1} }
+      }
+    }
+  });
+}
+
+// ── CRUD ─────────────────────────────────────────────────────────────────
+async function submitCreate() {
+  const holder  = document.getElementById('create-holder').value.trim();
+  const account = parseInt(document.getElementById('create-account').value)||0;
+  const broker  = document.getElementById('create-broker').value;
+  const expires = document.getElementById('create-expires').value||null;
+  const notes   = document.getElementById('create-notes').value.trim();
+  const master  = document.getElementById('create-master').checked;
+
+  if (!master && !account) { showToast('Ingresa el número de cuenta MT4.','error'); return; }
+
+  const payload = {
+    license_key: pendingKey,
+    holder_name: holder,
+    account_login: master ? 0 : account,
+    broker_name: broker,
+    status: 'VALID',
+    is_master: master,
+    notes: notes || null,
+    expires_at: expires ? new Date(expires).toISOString() : null
+  };
+
+  const { error } = await sb.from('licenses').insert([payload]);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+
+  showToast('Licencia creada correctamente.');
+  closeModal('modal-create');
+  resetCreateForm();
+  await loadLicenses();
+}
+
+async function submitEdit() {
+  if (!editingKey) return;
+  const payload = {
+    holder_name:  document.getElementById('edit-holder').value.trim(),
+    account_login: parseInt(document.getElementById('edit-account').value)||0,
+    broker_name:  document.getElementById('edit-broker').value,
+    status:       document.getElementById('edit-status').value,
+    is_master:    document.getElementById('edit-master').checked,
+    notes:        document.getElementById('edit-notes').value.trim()||null,
+    expires_at:   document.getElementById('edit-expires').value
+                    ? new Date(document.getElementById('edit-expires').value).toISOString()
+                    : null
+  };
+
+  const { error } = await sb.from('licenses').update(payload).eq('license_key', editingKey);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+
+  showToast('Licencia actualizada.');
+  closeModal('modal-edit');
+  await loadLicenses();
+}
+
+async function revokeLicense(key) {
+  const { error } = await sb.from('licenses').update({ status:'REVOKED' }).eq('license_key', key);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Licencia revocada.', 'info');
+  await loadLicenses();
+}
+
+async function restoreLicense(key) {
+  const { error } = await sb.from('licenses').update({ status:'VALID' }).eq('license_key', key);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Licencia restaurada.');
+  await loadLicenses();
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────
+function openCreateModal() {
+  pendingKey = genKey();
+  document.getElementById('create-key-preview').textContent = pendingKey;
+  resetCreateForm();
+  openModal('modal-create');
+}
+
+function openEditModal(licJson) {
+  const lic = JSON.parse(licJson);
+  editingKey = lic.license_key;
+  document.getElementById('edit-key-display').textContent = lic.license_key;
+  document.getElementById('edit-holder').value  = lic.holder_name||'';
+  document.getElementById('edit-account').value = lic.account_login||'';
+  document.getElementById('edit-status').value  = lic.status||'VALID';
+  document.getElementById('edit-master').checked = !!lic.is_master;
+  document.getElementById('edit-notes').value   = lic.notes||'';
+
+  // broker
+  const bL = (lic.broker_name||'').toLowerCase();
+  if (bL.includes('exness')) document.getElementById('edit-broker').value = 'exness';
+  else document.getElementById('edit-broker').value = 'just_markets';
+
+  // expires
+  if (lic.expires_at) {
+    const d = new Date(lic.expires_at);
+    document.getElementById('edit-expires').value = d.toISOString().split('T')[0];
+  } else {
+    document.getElementById('edit-expires').value = '';
+  }
+  openModal('modal-edit');
+}
+
+function resetCreateForm() {
+  ['create-holder','create-account','create-notes','create-expires'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('create-broker').value = 'just_markets';
+  document.getElementById('create-master').checked = false;
+}
+
+function onMasterToggle(prefix) {
+  const isMaster = document.getElementById(prefix+'-master').checked;
+  const accField = document.getElementById(prefix+'-account');
+  if (accField) accField.disabled = isMaster;
+}
+
+function confirmRevoke(key) {
+  showConfirm(
+    'Revocar licencia',
+    `¿Revocar la licencia <strong style="color:var(--gold)">${key}</strong>?<br>El EA dejará de operar en esta cuenta.`,
+    () => revokeLicense(key)
+  );
+}
+
+function confirmRestore(key) {
+  showConfirm(
+    'Restaurar licencia',
+    `¿Restaurar la licencia <strong style="color:var(--green)">${key}</strong>?`,
+    () => restoreLicense(key)
+  );
+}
+
+function showConfirm(title, msg, onYes) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').innerHTML = msg;
+  const btn = document.getElementById('confirm-yes-btn');
+  btn.onclick = () => { closeModal('modal-confirm'); onYes(); };
+  openModal('modal-confirm');
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) el.classList.remove('open');
+  });
+});
+
+// Login on Enter
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+});
+
+// ── KEEP-ALIVE ────────────────────────────────────────────────────────────
+async function doPing() {
+  const { error } = await sb.from('licenses').select('count',{count:'exact',head:true});
+  if (error) showToast('Ping fallido: ' + error.message, 'error');
+  else showToast('Ping exitoso — Supabase activo.', 'info');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const container = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = 'toast-item' + (type==='error'?' error':type==='info'?' info':'');
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toastOut .3s ease forwards';
+    setTimeout(() => el.remove(), 300);
+  }, 3500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { showApp(session.user.email); await loadLicenses(); }
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session) { showApp(session.user.email); await loadLicenses(); }
+    else {
+      document.getElementById('app-screen').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      allLicenses = []; filtered = [];
+    }
+  });
+}
+
+init();
 </script>
 </body>
 </html>
